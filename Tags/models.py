@@ -20,6 +20,6 @@ class TaggedItem(models.Model):
     # ContentType is a model that represents obejct in the relation ship
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE) # here we have to import the Product class from the store app but then it wont be generic and will be restricted to single app
     object_id = models.PositiveIntegerField() # here we are assume the primary key is an integer
-    content_object = GenericForeignKey() # this is the actual object that we will get when we query
+    content_object = GenericForeignKey('content_type', 'object_id') # this is the actual object that we will get when we query
     
 

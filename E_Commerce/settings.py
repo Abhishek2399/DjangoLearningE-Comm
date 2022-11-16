@@ -41,7 +41,10 @@ INSTALLED_APPS = [
     "debug_toolbar",
     # Self made apps
     "Store",
-    "Tags"
+    # app that will handle the tagging of any object
+    "Tags",
+    # app that will handle the likes on any object
+    "Likes"
 ]
 
 INTERNAL_IPS = [

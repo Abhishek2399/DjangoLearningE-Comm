@@ -70,6 +70,10 @@ class Order(models.Model):
     # django will automatically populate this field
     placed_at = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(max_length=1, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_PENDING)
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, null=True, related_name="my_orders")
+
+    def __str__(self) -> str:
+        return f"{self.placed_at} - {self.customer} - {self.payment_status}"
 
 
 class Address(models.Model):
@@ -101,10 +105,13 @@ class Product(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.PROTECT)
-    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="my_order_items")
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="my_ordered_products")
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def __str__(self) -> str:
+        return f"{self.order} - {self.product} - {self.quantity} - {self.unit_price}"
 
 
 class Cart(models.Model):

@@ -13,30 +13,55 @@
 
     <title>E-Commerce</title>
 </head>
-<body>
+{% block body %}
 
-    <div class="container">
-        <table class="table table-bordered table-striped">
-            <thead>
-              <tr>
-                <th scope="col">Collection</th>
-                <th scope="col">Title</th>
-                <th scope="col">Price</th>
-                <th scope="col">Inventory</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for product in products %}
-                <tr>
-                    <th scope="row">{{ product.collection }}</th>
-                    <td>{{ product.title }}</td>
-                    <td>{{ product.price }}</td>
-                    <td>{{ product.inventory }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-    </div>
+<body>
+  {% block navbar %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#">My Store</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
     
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'my_orders' %}">My Orders</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  {% endblock navbar %}
+  
+  {% block data_table %}
+    <div class="container">
+
+      <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th scope="col">Collection</th>
+              <th scope="col">Title</th>
+              <th scope="col">Price</th>
+              <th scope="col">Inventory</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for product in products %}
+              <tr>
+                  <th scope="row">{{ product.collection }}</th>
+                  <td>{{ product.title }}</td>
+                  <td>{{ product.price }}</td>
+                  <td>{{ product.inventory }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+    </div>
+  {% endblock data_table %}
+  
+  
 </body>
+
+{% endblock body %}
+
 </html>

@@ -29,6 +29,14 @@ def home(request):
     products = Product.objects.all().values('title', 'price')
 
 
-
-
     return render(request, "home.html", context={'products' : products})
+
+
+def my_orders(request):
+    customer = Customer.objects.all().first()
+    # getting the products ordered by following customer
+    order_items = Customer.objects.all().first().my_orders.all().first().my_order_items.all()
+    cdict = {
+        "ordered_items" : order_items
+    }
+    return render(request, "my_products.html", context=cdict)

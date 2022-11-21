@@ -15,24 +15,17 @@ class Promotion(models.Model):
     description = models.CharField(max_length = 255)
     discount = models.FloatField(max_length = 255)
 
+    def __str__(self) -> str:
+        return f"{self.description} : {self.discount}"
+
 
 class Collection(models.Model):
     title = models.CharField(max_length=255)
+    featured_product = models.ForeignKey('Product', related_name="+", on_delete=models.SET_NULL, null=True)
     # to resolve the circular relationship in between the Collection and Product class we have to add the Foreign class in quotes '' make sure the name remains the same as the actual class
     # after resolving the circular relation we will have to change the related name as well to '+'
-
-
-class Product(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    price = models.DecimalField(max_digits=6, decimal_places=2) # preferred more then FloatField because Float has rounding issues
-    inventory = models.IntegerField()
-    last_update = models.DateTimeField(auto_now=True) # auto_add_now will add the date and time when the field is updated/added first time
-    # django will use the related_name field in the Promotion class as reference to the product class from Promotion class
-    # promotions = models.ManyToManyField(Promotion, related_name="products")
-    promotions = models.ManyToManyField(Promotion)
-    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
-
+    def __str__(self):
+        return f"{self.title}"
 
 class Customer(models.Model):
     # setting the deafult Value
@@ -54,6 +47,15 @@ class Customer(models.Model):
     # following is a choice field
     membership = models.CharField(max_length=1, choices=MEMBERSHIP_CHOICES, default = MEMBERSHIP_BRONZE)
 
+    class Meta:
+        # defining meta data about the current class, we use the following class in order to customize the following table
+        db_table = "store_customers"
+        indexes = [
+            models.Index(fields=['first_name', 'last_name'])
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.first_name} {self.last_name} ({self.membership})"
 
 class Order(models.Model):
     PAYMENT_PENDING = 'P'
@@ -77,7 +79,10 @@ class Address(models.Model):
     # one address will be related to one customer
     # cutomer = models.OneToOneField(Customer, on_delete=models.CASCADE)
     # incase we need one to many relation i.e. one customer can have multiple addresses
-    cutomer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return f"{self.street}, {self.city}"
 
 
 class Product(models.Model):
@@ -87,7 +92,12 @@ class Product(models.Model):
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
     # here the models.PROTECT will protect from deletion of the Products even if any customer is Deleted
-    collection = models.ForeignKey('Collection', on_delete=models.PROTECT)
+    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
+    promotions = models.ManyToManyField(Promotion, related_name="promoted_product")
+
+
+    def __str__(self):
+        return f"{self.collection} : {self.title} - {self.description}"
 
 
 class OrderItem(models.Model):

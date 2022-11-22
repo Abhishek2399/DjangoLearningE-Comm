@@ -37,23 +37,26 @@
     <div class="container">
 
       <table class="table table-bordered table-striped">
-          <thead>
+          {% comment %} <thead>
             <tr>
               <th scope="col">Collection</th>
               <th scope="col">Title</th>
               <th scope="col">Price</th>
               <th scope="col">Inventory</th>
             </tr>
-          </thead>
+          </thead> {% endcomment %}
           <tbody>
-            {% for product in products %}
+            {% if object_list %}
+              {% for obj in object_list %}
               <tr>
-                  <th scope="row">{{ product.collection }}</th>
-                  <td>{{ product.title }}</td>
-                  <td>{{ product.price }}</td>
-                  <td>{{ product.inventory }}</td>
+                <td>{{ obj.customer.first_name }}</td>
+                <td>{{ obj.customer.last_name }}</td>
+                <td>{{ obj.payment_status }}</td>
+                  <td>{{ obj.placed_at }}</td>
               </tr>
-            {% endfor %}
+              {% endfor %}
+            {% endif %}
+            
           </tbody>
         </table>
     </div>

@@ -5,13 +5,35 @@ from .models import *
 
 # Create your views here.
 def home(request):
+
+    try:
+        Product.objects.all().delete()
+    except Exception as e:
+        print(f"Product Deletion Err : {str(e)}")
+        
+    
+    return render(request, "home.html")
+
+    products = Product.objects.prefetch_related('promotions').all()# this will get the fields from Product table as well as the Collection table, select_related will only work on one to many fields
+    # print(products[0].promotions.all())
+
+    # querying the related fields as well 
+    products = Product.objects.all() # this will only get fields from the Product table
+    
+    # in-order to the get the field from the related tables at the same time
+    products = Product.objects.select_related('collection').all() # this will get the fields from Product table as well as the Collection table, select_related will only work on one to many fields. 
+    
+    products = Product.objects.select_related('collection__featured_product').all() # we can also get the fields related to the related field in query i.e. related fields to the collection object
+
     # checking if the object exist
     promotion_exist = Promotion.objects.filter(pk=1).exists()
+    
     # finding all the products with price greater than 1000
     products = Product.objects.filter(price__gt =  1000)
+    
     # finding products in range of price
     products = Product.objects.filter(price__range = (100, 500))
-    
+
     # evaluating and executing Query set
     # products = list(products)
     
@@ -29,13 +51,12 @@ def home(request):
     products = Product.objects.all().values('title', 'price')
 
 
-    return render(request, "home.html", context={'products' : products})
 
-
+# for testing the use of related name field
 def my_orders(request):
-    customer = Customer.objects.all().first()
+    customer = Customer.objects.all()[0]
     # getting the products ordered by following customer
-    order_items = Customer.objects.all().first().my_orders.all().first().my_order_items.all()
+    order_items = customer.my_orders.all().first().my_order_items.all()
     cdict = {
         "ordered_items" : order_items
     }

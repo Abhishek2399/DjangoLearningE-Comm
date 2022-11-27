@@ -1,5 +1,5 @@
 -- SQLite
-insert into store_customers (id, first_name, last_name, email, phone, birth_date, membership)
+insert into store_customer (id, first_name, last_name, email, phone, birth_date, membership)
 values  (1, 'Faydra', 'Corhard', 'fcorhard0@dot.gov', '897-661-9039', '2020-10-28', 'G'),
         (2, 'Mara', 'Cammack', 'mcammack1@bigcartel.com', '649-120-2330', '2020-07-16', 'G'),
         (3, 'Shoshanna', 'Cleatherow', 'scleatherow2@vk.com', '434-940-7359', '2021-04-28', 'S'),

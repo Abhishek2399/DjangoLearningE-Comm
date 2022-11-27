@@ -44,7 +44,9 @@ INSTALLED_APPS = [
     # app that will handle the tagging of any object
     "Tags",
     # app that will handle the likes on any object
-    "Likes"
+    "Likes",
+    # extensions for django
+    'django_extensions',
 ]
 
 INTERNAL_IPS = [
@@ -93,7 +95,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'storefront.sqlite',
-    }
+    },
+        
 }
 
 

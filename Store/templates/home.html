@@ -1,3 +1,5 @@
+{% load store_filters %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,8 +16,21 @@
     <title>E-Commerce</title>
 </head>
 {% block body %}
-
 <body>
+  {% if result %}
+    {% block test_result %}
+      <div class="card" style="width:100%">
+        <div class="card-body">
+          <h5 class="card-title">{{ result_head }}</h5>
+          {% for key, val in result.items %}
+            <p class="card-text">{{ key }} = {{ val }}</p>        
+          {% endfor %}
+          
+        </div>
+      </div>
+    {% endblock test_result %}  
+  {% endif %}
+  
   {% block navbar %}
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="#">My Store</a>
@@ -37,22 +52,20 @@
     <div class="container">
 
       <table class="table table-bordered table-striped">
-          {% comment %} <thead>
+          <thead>
             <tr>
-              <th scope="col">Collection</th>
-              <th scope="col">Title</th>
-              <th scope="col">Price</th>
-              <th scope="col">Inventory</th>
+              {% for col in columns %}
+                <th scope="col">{{ col }}</th>
+              {% endfor %}
             </tr>
-          </thead> {% endcomment %}
+          </thead>
           <tbody>
             {% if object_list %}
               {% for obj in object_list %}
               <tr>
-                <td>{{ obj.customer.first_name }}</td>
-                <td>{{ obj.customer.last_name }}</td>
-                <td>{{ obj.payment_status }}</td>
-                  <td>{{ obj.placed_at }}</td>
+                {% for col in columns %}
+                  <td>{{ obj|get_val:col }}</td>
+                {% endfor %}
               </tr>
               {% endfor %}
             {% endif %}

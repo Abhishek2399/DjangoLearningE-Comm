@@ -6,6 +6,10 @@ name = "pypi"
 [packages]
 django = "*"
 django-debug-toolbar = "*"
+pandas = "*"
+jupyter = "*"
+ipython = "*"
+django-extensions = "*"
 
 [dev-packages]
 

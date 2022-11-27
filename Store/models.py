@@ -49,7 +49,7 @@ class Customer(models.Model):
 
     class Meta:
         # defining meta data about the current class, we use the following class in order to customize the following table
-        db_table = "store_customers"
+        db_table = "store_customer"
         indexes = [
             models.Index(fields=['first_name', 'last_name'])
         ]

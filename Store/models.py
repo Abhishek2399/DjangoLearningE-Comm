@@ -27,6 +27,10 @@ class Collection(models.Model):
     def __str__(self):
         return f"{self.title}"
 
+    class Meta:
+        # this will order the following class objects based on the title in admin site 
+        ordering = ["title"]
+
 class Customer(models.Model):
     # setting the deafult Value
     MEMBERSHIP_BRONZE = 'B'

@@ -1,20 +1,113 @@
+
 from django.shortcuts import render, HttpResponse
 from django.db.models import Q, F
 # for aggregation function
 from django.db.models.aggregates import *
 # for annotation
-from django.db.models import Value, F, Func
+from django.db.models import Value, F, Func, ExpressionWrapper, DecimalField
 # for DB Functions
 from django.db.models.functions import Concat
+from django.db import transaction, connection
 from pprint import pprint
-from .models import *
+from .models import Product, Order, Customer, Collection
 import pandas as pd
+
+# generic models
+from django.contrib.contenttypes.models import ContentType
+from Tags.models import TaggedItem, Tag
 
 
 # Create your views here.
 def home(request):
     result = {}
-    cust = Customer.objects.all()[5]
+    
+    objects = pd.DataFrame(
+        Order.objects.all().values().order_by('-id')
+    )
+    columns = [str(col).title() for col in objects.columns.to_list()]
+    objects = objects.to_dict('records')
+    pprint(columns)
+
+    cdict = {
+        'columns' : columns,
+        'object_list' : objects,
+        'result' : result,
+        'key' : list(result.keys())[0] if result else None,
+        'result_head' : "Aggregate function Count"
+    }
+    
+    return render(request, "home.html", context=cdict)
+
+    
+    # executing SQL queries independent from any Model
+    # 1. Establish connection with the DB
+    cursor = connection.cursor()
+    # 2. pass the query we want to execute
+    cursor.execute('')
+    # 3. close connection
+    cursor.close()
+
+    # alternate and safe way to write the above process
+    with connection.cursor() as cursor:
+        cursor.execute('')
+        # executing store procedures
+        cursor.callproc('proc_name',['params'])
+
+
+    # executing raw SQL Queries, every manager has a raw method
+    orders = Order.objects.raw('Select * from Order')
+
+    # transaction is used when we want to perfrom multiple insertions together and if one of them fails none other should take place
+    with transaction.atomic():
+        # write the queries here whcih we want to be atomic
+        # usecase : if there is no order item there should be no order
+        order = Order()
+        order.customer = Customer.objects.all().first()
+        order.save()
+
+        order_item = OrderItem()
+        order_item.order = order
+        order_item.product_id = -1 # giving wrong id to generate an error
+        order_item.quantity = 2
+        order_item.unit_price = 10
+        order_item.save()
+
+
+    
+    # creating objects
+    # creating the object we want to fill
+    collection = Collection()
+    # fill in the attribute values, these will reflect in the cols of respective table
+    collection.title = "Video Games"
+    collection.featured_product = Product.objects.get(pk = 500)  # type: ignore
+    # saving the object/entry
+    collection.save()
+
+    # custom manager class, code available in the model of repective app i.e. Tags.models
+    item_tags = TaggedItem.objects.get_tags_for(object_type=Product, object_id=10)
+
+    # Generic Object Relationship 
+    # special method 
+    content_type = ContentType.objects.get_for_model(model=Product)
+    tag_items = TaggedItem.objects.select_related('tag').filter(
+            content_type = content_type,
+            object_id = 10
+    )
+
+
+    # creating complex expressions
+    # first create the expression wrapper object and later use it in query, just to keep the code clean
+    # calculating a discounted price and annotating it 
+    discounted_price = ExpressionWrapper(F('unit_price') * 0.8, output_field=DecimalField())
+    objects = pd.DataFrame(
+        Product.objects.annotate(discounted_price = discounted_price).values()
+    )
+
+    # following query will get us the count of orders grouped by the Customer-id, i.e. no. of orders for each customer 
+    objects = pd.DataFrame(
+        Customer.objects.annotate(order_count = Count('my_orders')).values()
+        )
+
     # using the database level functions.
     # syntax : create one new col using annotate =>'full_name'.
     # use the cols from table itself if needed using the 'F' object, => F('first_name'), F('last_name').
@@ -25,20 +118,6 @@ def home(request):
                 full_name = Concat(F('first_name'), Value(' '), F('last_name'))
             ).values()
         )
-    columns = [str(col).title() for col in objects.columns.to_list()]
-    objects = objects.to_dict('records')
-    pprint(columns)
-
-    
-
-    cdict = {
-        'columns' : columns,
-        'object_list' : objects,
-        'result' : result,
-        'key' : list(result.keys())[0] if result else None,
-        'result_head' : "Aggregate function Count"
-    }
-    return render(request, "home.html", context=cdict)
 
     # annotating a new col "is_new" and giving it a True value, and new_id taking values from pre-existing cols
     objects = pd.DataFrame(Product.objects.annotate(is_new = Value(True), new_id= F('id')+F('unit_price')).values())
@@ -52,7 +131,8 @@ def home(request):
     # querying the related fields as well 
     objects = Product.objects.all() # this will only get fields from the Product table
     
-    # in-order to the get the field from the related tables at the same time
+    # in-order to the get the field from the related tables at the same time ,
+    # reduces the number of queries required while fetching the foreign objects, if select-related not used foreign objects can be accessed but will require too many queries
     objects = Product.objects.select_related('collection').all() # this will get the fields from Product table as well as the Collection table, select_related will only work on one to many fields. 
     
     objects = Product.objects.select_related('collection__featured_product').all() # we can also get the fields related to the related field in query i.e. related fields to the collection object

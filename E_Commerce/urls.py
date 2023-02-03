@@ -19,7 +19,7 @@ from django.urls import path, include
 admin.site.site_header = "Store-Front Admin"
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('store/', include('Store.urls')),
-    path('tags/', include('Tags.urls')),
+    path('store/', include('Store.urls'), name="store"),
+    path('tags/', include('Tags.urls'), name="tags"),
     path('__debug__/', include('debug_toolbar.urls')),
 ]

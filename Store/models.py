@@ -4,6 +4,10 @@ from statistics import mode
 from unicodedata import decimal
 from unittest.util import _MAX_LENGTH
 from django.db import models
+# for custom validators
+from django.core.validators import MinValueValidator # for validationg the minimum value in any field
+
+
 
 # Create your models here.
 
@@ -97,12 +101,12 @@ class Product(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     slug = models.SlugField(null=True, default="-")
-    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
-    inventory = models.IntegerField()
+    unit_price = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(1)])
+    inventory = models.IntegerField(validators=[MinValueValidator(0)])
     last_update = models.DateTimeField(auto_now=True)
     # here the models.PROTECT will protect from deletion of the Products even if any customer is Deleted
     collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
-    promotions = models.ManyToManyField(Promotion, related_name="promoted_product")
+    promotions = models.ManyToManyField(Promotion, related_name="promoted_product", blank=True)
 
 
     def __str__(self):

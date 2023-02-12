@@ -47,7 +47,7 @@ class TagInline(GenericTabularInline):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     # custom forms on the admin page
-    autocomplete_fields = ['collection', 'tag'] # for this we need to add the searchfield in the Admin setting of the collection we are using
+    autocomplete_fields = ['collection'] # for this we need to add the searchfield in the Admin setting of the collection we are using
     # field = [] # here we can specify the fields we want to show to the user
     # readonly_fields = [] # fields specified here cannot be changed from the admin panel
     prepopulated_fields = {"description": ("title",)}    
@@ -68,7 +68,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     search_fields = ['title']
 
-    inlines = [TagInline]
+    inlines = [TagInline] # for getting the child
 
     # computed columns
     # sorting the computed field
@@ -191,6 +191,9 @@ class CustomerAdmin(admin.ModelAdmin):
             order_count = Count('my_orders')
         )
 
+# @admin.register(Tag)
+# class TagAdmin(admin.ModelAdmin):
+#     search_fields = ['label']
 
 
 
@@ -205,6 +208,6 @@ admin.site.register(Address)
 admin.site.register(OrderItem)
 admin.site.register(Cart)
 admin.site.register(CartItem)
-admin.site.register(Tag)
+# admin.site.register(Tag)
 admin.site.register(TaggedItem)
 

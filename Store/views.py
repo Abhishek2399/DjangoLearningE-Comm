@@ -180,3 +180,43 @@ def my_orders(request):
     }
     return render(request, "my_products.html", context=cdict)
     return HttpResponse(objects)
+
+
+# all the functions/views mentioned below are the REST-APIs
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+# to use the resp/req from the rest-framework
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .serializers import ProductSerializer
+from rest_framework import status # used for responding multiple status
+# using Django HTTP-Response
+# def product_list(reponse):
+    # return HttpResponse('ok')
+
+# converting the above code as per the REST
+@api_view()
+def product_list(reponse):
+    product_qs = Product.objects.all()
+    products_serialzs = ProductSerializer(product_qs, many = True) # many attr. will let the serializer know that it has to iterate through the queryset
+    return Response(products_serialzs.data)
+
+
+# will send a single product object
+@api_view()
+def product_detail(response, id):
+    # try:
+    #     product_obj = Product.objects.get(pk = id)
+    #     product_serialz = ProductSerializer(product_obj)
+    # except Product.DoesNotExist:
+    #     # return Response(status = 404) # avoid sending numbers in response as it can be confusing
+    #     return Response(status = status.HTTP_404_NOT_FOUND)
+
+    # we can wrap the whole logic using a shortcut method 'get_object_or_404'
+    product_obj = get_object_or_404(Product, pk = id)
+    product_serialz = ProductSerializer(product_obj)
+
+    return Response(product_serialz.data)
+
+
+

@@ -10,6 +10,7 @@ pandas = "*"
 jupyter = "*"
 ipython = "*"
 django-extensions = "*"
+djangorestframework = "*"
 
 [dev-packages]
 

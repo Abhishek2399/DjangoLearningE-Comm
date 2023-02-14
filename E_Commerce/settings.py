@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     "Likes",
     # extensions for django
     'django_extensions',
+    # app to handle REST API
+    'rest_framework'
 ]
 
 INTERNAL_IPS = [

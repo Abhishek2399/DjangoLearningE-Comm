@@ -19,14 +19,17 @@ from Tags.models import TaggedItem, Tag
 
 # Create your views here.
 def home(request):
+    print("view called")
+    import random
     result = {}
-    
+    ids = [order['id'] for order in Order.objects.all().values('id')]
+    random_id = random.choice(ids)
+    print(f"ID : {random_id}")
     objects = pd.DataFrame(
-        Order.objects.all().values().order_by('-id')
+        Order.objects.filter(id = random_id).values()
     )
     columns = [str(col).title() for col in objects.columns.to_list()]
     objects = objects.to_dict('records')
-    pprint(columns)
 
     cdict = {
         'columns' : columns,
@@ -35,7 +38,6 @@ def home(request):
         'key' : list(result.keys())[0] if result else None,
         'result_head' : "Aggregate function Count"
     }
-    
     return render(request, "home.html", context=cdict)
 
     
@@ -188,23 +190,42 @@ from django.shortcuts import get_object_or_404
 # to use the resp/req from the rest-framework
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import ProductSerializer
+from .serializers import ProductSerializer, CollectionSerializer
 from rest_framework import status # used for responding multiple status
 # using Django HTTP-Response
 # def product_list(reponse):
     # return HttpResponse('ok')
 
 # converting the above code as per the REST
-@api_view()
-def product_list(reponse):
-    product_qs = Product.objects.all()
-    products_serialzs = ProductSerializer(product_qs, many = True) # many attr. will let the serializer know that it has to iterate through the queryset
-    return Response(products_serialzs.data)
+@api_view(['GET', 'POST'])
+def product_list(request):
 
+    if request.method == "GET":
+        product_qs = Product.objects.all()
+        products_serialzs = ProductSerializer(product_qs, many = True, context = {'request' : request}) # many attr. will let the serializer know that it has to iterate through the queryset
+        return Response(products_serialzs.data)
+    elif request.method == "POST":
+        product_dserializ = ProductSerializer(data = request.data) # this is where the de-serializing takes place
+        
+        # extracting the data from the de-serialized object
+        # if product_dserializ.is_valid(): # check if the de-serialized object is valid
+        #     data = product_dserializ.validated_data # extract the data if valid
+        #     return Response('ok')
+        # else:
+        #     # if form not valid send a bad request status along with the errors 
+        #     return Response(product_dserializ.errors, status = status.HTTP_400_BAD_REQUEST)
+
+        # short hand for the above
+        product_dserializ.is_valid(raise_exception=True) # following will raise exception and return a 400 request along with errors at the same time
+        print(product_dserializ.validated_data)
+        return Response("ok")
+    
+    
 
 # will send a single product object
-@api_view()
-def product_detail(response, id):
+# in the list we have defined the HTTP-Methods that our end-point will manage hence in the following end point we can either review all the objects (GET) or create a new one (POST)
+@api_view() 
+def product_detail(request, pk):
     # try:
     #     product_obj = Product.objects.get(pk = id)
     #     product_serialz = ProductSerializer(product_obj)
@@ -213,10 +234,17 @@ def product_detail(response, id):
     #     return Response(status = status.HTTP_404_NOT_FOUND)
 
     # we can wrap the whole logic using a shortcut method 'get_object_or_404'
-    product_obj = get_object_or_404(Product, pk = id)
-    product_serialz = ProductSerializer(product_obj)
-
+    product_obj = get_object_or_404(Product, pk = pk)
+    product_serialz = ProductSerializer(product_obj, context={'request' : request})
     return Response(product_serialz.data)
 
+
+
+@api_view()
+def collection_detail(request, pk):
+    collection_obj = get_object_or_404(Collection, pk = pk)
+    collection_serialz = CollectionSerializer(collection_obj)
+    
+    return Response(collection_serialz.data)
 
 

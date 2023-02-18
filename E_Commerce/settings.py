@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     # extensions for django
     'django_extensions',
     # app to handle REST API
-    'rest_framework'
+    'rest_framework',
 ]
 
 INTERNAL_IPS = [

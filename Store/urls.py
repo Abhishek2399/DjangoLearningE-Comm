@@ -9,8 +9,10 @@ admin.site.index_title = "Admin"
 
 urlpatterns = [
     path('', views.home),
-    path('\my_orders', views.my_orders, name="my_orders"),
+    path('my_orders', views.my_orders, name="my_orders"),
     # all the paths below this refer to the APIs endpoint
-    path('products/', views.product_list), # if someone access the 'products/' end pioint it will be handeled by the productlist from the views
-    path('products/<int:id>', views.product_detail),
+    path('products/', views.product_list, name="all-products"), # if someone access the 'products/' end pioint it will be handeled by the productlist from the views
+    path('products/<int:pk>', views.product_detail, name="product-detail"),
+    path('collections/<int:pk>', views.collection_detail, name="collection-detail"),
+
 ]

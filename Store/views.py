@@ -25,8 +25,9 @@ def home(request):
     ids = [order['id'] for order in Order.objects.all().values('id')]
     random_id = random.choice(ids)
     print(f"ID : {random_id}")
+    model = Product
     objects = pd.DataFrame(
-        Order.objects.filter(id = random_id).values()
+        model.objects.all().values()
     )
     columns = [str(col).title() for col in objects.columns.to_list()]
     objects = objects.to_dict('records')
@@ -197,6 +198,7 @@ from rest_framework import status # used for responding multiple status
     # return HttpResponse('ok')
 
 # converting the above code as per the REST
+# in the list we have defined the HTTP-Methods that our end-point will manage hence in the following end point we can either review all the objects (GET) or create a new one (POST)
 @api_view(['GET', 'POST'])
 def product_list(request):
 
@@ -217,14 +219,18 @@ def product_list(request):
 
         # short hand for the above
         product_dserializ.is_valid(raise_exception=True) # following will raise exception and return a 400 request along with errors at the same time
+        try:
+            product_dserializ.save() # save method will itself extract the data by using .validated_data internally
+        except Exception as e:
+            return Response(status=status.HTTP_409_CONFLICT) # returning a conflict status in case of any constraint error
         print(product_dserializ.validated_data)
-        return Response("ok")
-    
+        return Response(product_dserializ.data, status=status.HTTP_201_CREATED) # if new object successfully created return the response 201 : i.e. object created 
     
 
 # will send a single product object
-# in the list we have defined the HTTP-Methods that our end-point will manage hence in the following end point we can either review all the objects (GET) or create a new one (POST)
-@api_view() 
+# following end-point will handle 2 types of request get and put, get will help us fetch the object and put method will help us update the object,
+# rule endpoint that will handle the put-request should access only single object
+@api_view(['GET', 'PUT']) 
 def product_detail(request, pk):
     # try:
     #     product_obj = Product.objects.get(pk = id)
@@ -235,11 +241,16 @@ def product_detail(request, pk):
 
     # we can wrap the whole logic using a shortcut method 'get_object_or_404'
     product_obj = get_object_or_404(Product, pk = pk)
-    product_serialz = ProductSerializer(product_obj, context={'request' : request})
-    return Response(product_serialz.data)
-
-
-
+    if request.method == "GET":
+        product_serialz = ProductSerializer(product_obj, context={'request' : request})
+        return Response(product_serialz.data)
+    elif request.method == "PUT":
+        # initializing with the current Product
+        product_dserialz = ProductSerializer(product_obj, data = request.data, context={'request' : request})
+        product_dserialz.is_valid(raise_exception=True)
+        product_dserialz.save()
+        return Response(product_dserialz.data, status = status.HTTP_201_CREATED)
+    
 @api_view()
 def collection_detail(request, pk):
     collection_obj = get_object_or_404(Collection, pk = pk)

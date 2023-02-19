@@ -14,7 +14,7 @@ class CollectionSerializer(serializers.ModelSerializer):
 #     title = serializers.CharField(max_length = 255)
 
 
-# # the class being mentioned here is the serializer we will be using convert python-django objects to dictionary
+# # the class being mentioned here is the serializer we will be using convert python-django oebjects to dictionary
 # class ProductSerializer(serializers.Serializer):
 #     # here we need to include all the fields we want to serialize from the Product model
 #     # never to mention confidential fields of the objects
@@ -63,8 +63,9 @@ class CollectionSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'title', 'unit_price', 'price_with_tax', 'collection'] # we can define the fields we want to serialize explicitly here as a list
+        fields = ['id', 'title', 'unit_price', 'description', 'slug', 'inventory', 'price_with_tax', 'collection', 'product_update'] # we can define the fields we want to serialize explicitly here as a list
         # fields = '__all__' # this will consider all the fields from the model specified which is not a proper practice, always explicitly define the fields we want to have
+        read_only_fields = ['product_update']
     
     # for fields that we want to display as extra we can define outside the Meta class, which will over-write the default value
     # collection = serializers.HyperlinkedRelatedField(
@@ -75,6 +76,12 @@ class ProductSerializer(serializers.ModelSerializer):
         # collection_obj = CollectionSerializer(source = "collection")
 
     price_with_tax = serializers.SerializerMethodField(method_name = "calculate_tax")
+    product_update = serializers.HyperlinkedRelatedField(
+        queryset = Product.objects.all(),
+        view_name = "product-detail",
+        source = "id",
+        required = False
+    )
     # we can define the custom fields as well outside the Meta class
     def calculate_tax(self, product : Product):
         return product.unit_price * Decimal(1.1)
@@ -85,3 +92,21 @@ class ProductSerializer(serializers.ModelSerializer):
     #         return serializers.ValidationError("Password does not match")
     #     return data
     
+    # overwriting the method responsible for saving the object in the database
+    # following create method is already called whenever the save method is called
+    # def create(self, validated_data:dict={}) -> Product:
+    #     print("Inserting an object")
+    #     product = Product(**validated_data)
+    #     # product.other = 1 # here we can access any attribute belonging the Product class
+    #     product.save()
+    #     return product
+    
+    # Overwritting the update function 
+    # instance is set by django itself
+    # def update(self, instance:Product, validated_data:dict={}) -> Product:
+    #     print("Updating an object")
+    #     # defining the field we want to update can be anything
+    #     instance.unit_price = validated_data.get('unit_price', Decimal(0))
+    #     instance.save()
+    #     return instance
+

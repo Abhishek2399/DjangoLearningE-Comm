@@ -16,6 +16,20 @@
     {% comment %} HTMX CDN {% endcomment %}
     <script src="https://unpkg.com/htmx.org@1.8.5" integrity="sha384-7aHh9lqPYGYZ7sTHvzP1t3BAfLhYSTy9ArHdP3Xsr9/3TlGurYgcPBoFmXX2TX/w" crossorigin="anonymous"></script>
 
+    {% comment %} Data Table {% endcomment %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.2/css/jquery.dataTables.css">
+  
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.js"></script>
+
+    <script>
+      $(document).ready( function () {
+        console.log("Document ready function executed");
+        $('#data-table').DataTable();   
+      } );
+    </script>
+
+
     <title>E-Commerce</title>
 </head>
 {% block body %}
@@ -52,10 +66,10 @@
   {% endblock navbar %}
   
   {% block data_table %}
-    <div class="htx-call" hx-get="/store" hx-trigger = "every 1s" hx-target="#to_change"></div>
-    <div class="container border border-danger">
+    {% comment %} <div class="htx-call" hx-get="/store" hx-trigger = "every 1s" hx-target="#to_change"></div> {% endcomment %}
+    <div class="container">
 
-      <table class="table table-bordered table-striped">
+      <table class="table table-bordered table-striped" id="data-table">
           <thead>
             <tr>
               {% for col in columns %}
@@ -78,9 +92,10 @@
     </div>
   {% endblock data_table %}
   
-  
+
 </body>
 
 {% endblock body %}
+
 
 </html>

@@ -260,12 +260,12 @@ def product_detail(request, pk):
     elif request.method == "DELETE":
         # whenever we delete a product return an empty respone of 204-no Content
         # before deleting product check if it has been used as any foreign key
-        if product_obj.my_ordered_products.count() > 0:
-            return Response(status = status.HTTP_405_METHOD_NOT_ALLOWED)
+        if product_obj.my_ordered_products.count() > 0: #type:ignore -> to suppress any warning
+            return Response(status = status.HTTP_405_METHOD_NOT_ALLOWED) # if some exception occurs while performing delete
         product_obj.delete()
-        return Response(status = status.HTTP_204_NO_CONTENT)
+        return Response(status = status.HTTP_204_NO_CONTENT) # after deleting an object
     
-@api_view(['get', 'put']) 
+@api_view(['get', 'put', 'delete']) 
 # get : to fetch single object
 # put : to update a specific object
 def collection_detail(request, pk):
@@ -281,7 +281,13 @@ def collection_detail(request, pk):
         collection_serialz.is_valid(raise_exception=True)
         collection_serialz.save()
         return Response(collection_serialz.data, status = status.HTTP_201_CREATED)
-
+    elif request.method == "DELETE":
+        try:
+            collection_obj.delete()
+        except Exception as e:
+            return Response(status = status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response(status = status.HTTP_204_NO_CONTENT)
+        
 
 @api_view(['GET', 'POST'])
 def collection_list(request):

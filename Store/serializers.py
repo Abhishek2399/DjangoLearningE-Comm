@@ -18,7 +18,7 @@ class CollectionSerializer(serializers.ModelSerializer):
     )
 
     def get_no_of_products(self, collection : Collection):
-        return collection.product_set.count()
+        return collection.product_set.count() #type:ignore
 
         
 

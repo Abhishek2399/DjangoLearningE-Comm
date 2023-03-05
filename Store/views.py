@@ -251,11 +251,21 @@ def product_detail(request, pk):
         product_dserialz.save()
         return Response(product_dserialz.data, status = status.HTTP_201_CREATED)
     
-@api_view()
+@api_view(['get', 'put']) 
+# get : to fetch single object
+# put : to update a specific object
 def collection_detail(request, pk):
-    collection_obj = get_object_or_404(Collection, pk = pk)
-    collection_serialz = CollectionSerializer(collection_obj)
-    
-    return Response(collection_serialz.data)
+    collection_obj = get_object_or_404(Collection, pk = pk) 
+    cdict = {
+        'request' : request
+    }
+    if request.method == "GET":
+        collection_serialz = CollectionSerializer(collection_obj, context = cdict)
+        return Response(collection_serialz.data)
+    elif request.method == "PUT":
+        collection_serialz = CollectionSerializer(collection_obj, data = request.data, context = cdict)
+        collection_serialz.is_valid(raise_exception=True)
+        collection_serialz.save()
+        return Response(collection_serialz.data, status = status.HTTP_201_CREATED)
 
 

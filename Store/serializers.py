@@ -6,7 +6,20 @@ from .models import Product, Collection
 
 class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ['id', 'title']
+        model = Collection
+        fields = ['id', 'title', 'no_of_product', 'collection_update']
+    
+    no_of_product = serializers.SerializerMethodField(method_name = "get_no_of_products")
+    collection_update = serializers.HyperlinkedRelatedField(
+        queryset = Collection.objects.all(),
+        view_name = "collection-detail",
+        source = "id",
+        required = False
+    )
+
+    def get_no_of_products(self, collection : Collection):
+        return collection.product_set.count()
+
         
 
 # class CollectionSerializer(serializers.Serializer):

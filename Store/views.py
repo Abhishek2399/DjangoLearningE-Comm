@@ -230,7 +230,7 @@ def product_list(request):
 # will send a single product object
 # following end-point will handle 2 types of request get and put, get will help us fetch the object and put method will help us update the object,
 # rule endpoint that will handle the put-request should access only single object
-@api_view(['GET', 'PUT']) 
+@api_view(['GET', 'PUT', 'DELETE']) 
 def product_detail(request, pk):
     # try:
     #     product_obj = Product.objects.get(pk = id)
@@ -242,14 +242,28 @@ def product_detail(request, pk):
     # we can wrap the whole logic using a shortcut method 'get_object_or_404'
     product_obj = get_object_or_404(Product, pk = pk)
     if request.method == "GET":
-        product_serialz = ProductSerializer(product_obj, context={'request' : request})
+        product_serialz = ProductSerializer(
+            product_obj, # product object
+            context={'request' : request} # for showing the link to go to any object
+        )
         return Response(product_serialz.data)
     elif request.method == "PUT":
         # initializing with the current Product
-        product_dserialz = ProductSerializer(product_obj, data = request.data, context={'request' : request})
+        product_dserialz = ProductSerializer(
+            product_obj, # product object
+            data = request.data, # edited data from the request
+            context={'request' : request} # for showing the link in the object
+        )
         product_dserialz.is_valid(raise_exception=True)
         product_dserialz.save()
         return Response(product_dserialz.data, status = status.HTTP_201_CREATED)
+    elif request.method == "DELETE":
+        # whenever we delete a product return an empty respone of 204-no Content
+        # before deleting product check if it has been used as any foreign key
+        if product_obj.my_ordered_products.count() > 0:
+            return Response(status = status.HTTP_405_METHOD_NOT_ALLOWED)
+        product_obj.delete()
+        return Response(status = status.HTTP_204_NO_CONTENT)
     
 @api_view(['get', 'put']) 
 # get : to fetch single object
@@ -269,3 +283,17 @@ def collection_detail(request, pk):
         return Response(collection_serialz.data, status = status.HTTP_201_CREATED)
 
 
+@api_view(['GET', 'POST'])
+def collection_list(request):
+    collection_qs = Collection.objects.all()
+    if request.method == "GET":
+        collection_serialzs = CollectionSerializer(collection_qs, many = True, context = {'request':request})
+        return Response(collection_serialzs.data)
+    elif request.method == "POST":
+        collection_serialz = CollectionSerializer(data=request.data, context = {'request':request})
+        collection_serialz.is_valid(raise_exception=True)
+        try:
+            collection_serialz.save()
+        except Exception as e:
+            return Response(status = status.HTTP_409_CONFLICT)
+        return Response(collection_serialz.data, status = status.HTTP_201_CREATED)

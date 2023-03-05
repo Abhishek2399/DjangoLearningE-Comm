@@ -14,5 +14,6 @@ urlpatterns = [
     path('products/', views.product_list, name="all-products"), # if someone access the 'products/' end pioint it will be handeled by the productlist from the views
     path('products/<int:pk>', views.product_detail, name="product-detail"),
     path('collections/<int:pk>', views.collection_detail, name="collection-detail"),
+    path('collections/', views.collection_list, name="all-collections"),
 
 ]

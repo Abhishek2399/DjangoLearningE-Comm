@@ -303,3 +303,10 @@ def collection_list(request):
         except Exception as e:
             return Response(status = status.HTTP_409_CONFLICT)
         return Response(collection_serialz.data, status = status.HTTP_201_CREATED)
+
+
+# Class Based Views
+from rest_framework.views import APIView
+class ProductList(APIView):
+    # inside this class we can overwrite the http-methods is terms of functions
+    pass

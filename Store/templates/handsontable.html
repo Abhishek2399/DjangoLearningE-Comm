@@ -40,6 +40,7 @@
         console.log(data);
         console.log(typeof data);
         function fill_table(data) {
+            var edited_data = undefined;
             const container = document.querySelector('#example');
             const hot = new Handsontable(container, {
                 data,
@@ -61,10 +62,14 @@
                     renderer: 'customStylesRenderer',
                     },
                 ],
-                afterChange: (changes) => {
-                    changes?.forEach(([row, prop, oldValue, newValue]) => {
-                      console.log($`Changed ${row}/${prop} from ${oldValue} to ${newValue}`)
-                    });
+                afterChange: (changes, source) => {
+                    if(source === "edit"){
+                        console.log(changes);
+                        var row = changes[0][0]
+                        console.log(`${row} changed`);
+                        console.log(hot.getSourceDataAtRow(row));
+                        edited_data = row
+                    }
                   }
             });
 
@@ -73,6 +78,20 @@
                     const cellProperties = {};                 
                     cellProperties.editor = 'text';
                     return cellProperties;
+                }
+              });
+            
+              $.ajax({
+                url: '/store/collections/',
+                method: 'POST',
+                data: {
+                  rowData: JSON.stringify(edited_data)
+                },
+                success: function (response) {
+                  console.log(response);
+                },
+                error: function (xhr, status, error) {
+                  console.log(xhr.responseText);
                 }
               });
 

@@ -39,7 +39,7 @@ def home(request):
         'key' : list(result.keys())[0] if result else None,
         'result_head' : "Aggregate function Count"
     }
-    return render(request, "home.html", context=cdict)
+    return render(request, "handsontable.html", context=cdict)
 
     
     # executing SQL queries independent from any Model

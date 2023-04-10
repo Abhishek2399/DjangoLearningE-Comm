@@ -1,0 +1,86 @@
+{% extends 'home.html' %}
+{% load static %}
+
+{% block body %}
+    {% block navbar %}{% endblock navbar %}
+    {% block data_table %}
+    <div id="example"></div>
+    {% endblock data_table %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+
+        Handsontable.renderers.registerRenderer('customStylesRenderer', (hotInstance, TD, ...rest) => {
+            Handsontable.renderers.TextRenderer(hotInstance, TD, ...rest);
+          
+            TD.style.fontWeight = 'bold';
+            TD.style.color = 'green';
+            TD.style.background = '#d7f1e1';
+          });
+
+        var data = undefined;
+        
+        $(document).ready(function(){ 
+            // Using jQuery to call the API endpoint
+            $.ajax({
+                url: '/store/collections/',
+                dataType: 'json',
+                success: function(data) {
+                    data = data;
+                    if (data){
+                        console.log("Data Found !!");
+                        fill_table(data);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Error: ' + textStatus + ' ' + errorThrown);
+                }
+            });
+        });  
+        
+        console.log(data);
+        console.log(typeof data);
+        function fill_table(data) {
+            const container = document.querySelector('#example');
+            const hot = new Handsontable(container, {
+                data,
+                colHeaders: true,
+                height: 'auto',
+                width: 'auto',
+                minSpareRows: 1,
+                licenseKey: 'non-commercial-and-evaluation',
+                customBorders: true,
+                dropdownMenu: true,
+                multiColumnSorting: true,
+                filters: true,
+                manualRowMove: true,
+                manualColumnResize: true,
+                cell: [
+                    {
+                    row: 0,
+                    col: 0,
+                    renderer: 'customStylesRenderer',
+                    },
+                ],
+                afterChange: (changes) => {
+                    changes?.forEach(([row, prop, oldValue, newValue]) => {
+                      console.log($`Changed ${row}/${prop} from ${oldValue} to ${newValue}`)
+                    });
+                  }
+            });
+
+            hot.updateSettings({
+                cells(row, col, prop) {
+                    const cellProperties = {};                 
+                    cellProperties.editor = 'text';
+                    return cellProperties;
+                }
+              });
+
+
+        }
+
+        
+    
+    </script>
+{% endblock body %}
+

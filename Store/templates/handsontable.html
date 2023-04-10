@@ -68,7 +68,20 @@
                         var row = changes[0][0]
                         console.log(`${row} changed`);
                         console.log(hot.getSourceDataAtRow(row));
-                        edited_data = row
+                        edited_data = hot.getSourceDataAtRow(row)
+                        $.ajax({
+                            url: '/store/collections/',
+                            method: 'POST',
+                            data: {
+                              rowData: JSON.stringify(edited_data)
+                            },
+                            success: function (response) {
+                              console.log(response);
+                            },
+                            error: function (xhr, status, error) {
+                              console.log(xhr.responseText);
+                            }
+                        });
                     }
                   }
             });
@@ -81,19 +94,7 @@
                 }
               });
             
-              $.ajax({
-                url: '/store/collections/',
-                method: 'POST',
-                data: {
-                  rowData: JSON.stringify(edited_data)
-                },
-                success: function (response) {
-                  console.log(response);
-                },
-                error: function (xhr, status, error) {
-                  console.log(xhr.responseText);
-                }
-              });
+              
 
 
         }

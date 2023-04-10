@@ -303,3 +303,60 @@ def collection_list(request):
         except Exception as e:
             return Response(status = status.HTTP_409_CONFLICT)
         return Response(collection_serialz.data, status = status.HTTP_201_CREATED)
+
+# Class Based views
+# importing the base class for the class based views
+from rest_framework.views import APIView
+
+
+# class to access the products
+class ProductList(APIView):
+    # inside the class we can override the http methods such as "get" and "post" to handle the end-points requests
+    # method to handle the get request
+    def get(self, request):
+        product_qs = Product.objects.all()
+        products_serialzs = ProductSerializer(product_qs, many = True, context = {'request' : request}) # many attr. will let the serializer know that it has to iterate through the queryset
+        return Response(products_serialzs.data)
+    
+    # method to handle the post request
+    def post(self, request):
+        product_dserializ = ProductSerializer(data = request.data) # this is where the de-serializing takes place
+        # short hand for the above
+        product_dserializ.is_valid(raise_exception=True) # following will raise exception and return a 400 request along with errors at the same time
+        try:
+            product_dserializ.save() # save method will itself extract the data by using .validated_data internally
+        except Exception as e:
+            return Response(status=status.HTTP_409_CONFLICT) # returning a conflict status in case of any constraint error
+        print(product_dserializ.validated_data)
+        return Response(product_dserializ.data, status=status.HTTP_201_CREATED) # if new object successfully created return the response 201 : i.e. object created
+    
+
+class ProductDetail(APIView):
+    def get(self, request, pk):
+        product_obj = get_object_or_404(Product, pk = pk)
+        product_serialz = ProductSerializer(
+            product_obj, # product object
+            context={'request' : request} # for showing the link to go to any object
+        )
+        return Response(product_serialz.data)
+
+    def put(self, request, pk):
+        product_obj = get_object_or_404(Product, pk = pk)
+        # initializing with the current Product
+        product_dserialz = ProductSerializer(
+            product_obj, # product object
+            data = request.data, # edited data from the request
+            context={'request' : request} # for showing the link in the object
+        )
+        product_dserialz.is_valid(raise_exception=True)
+        product_dserialz.save()
+        return Response(product_dserialz.data, status = status.HTTP_201_CREATED)
+    
+    def delete(self, request, pk):
+        product_obj = get_object_or_404(Product, pk = pk)
+        # whenever we delete a product return an empty respone of 204-no Content
+        # before deleting product check if it has been used as any foreign key
+        if product_obj.my_ordered_products.count() > 0: #type:ignore -> to suppress any warning
+            return Response(status = status.HTTP_405_METHOD_NOT_ALLOWED) # if some exception occurs while performing delete
+        product_obj.delete()
+        return Response(status = status.HTTP_204_NO_CONTENT) # after deleting an object

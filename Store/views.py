@@ -193,6 +193,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import ProductSerializer, CollectionSerializer
 from rest_framework import status # used for responding multiple status
+
+import json
+
 # using Django HTTP-Response
 # def product_list(reponse):
     # return HttpResponse('ok')
@@ -277,10 +280,37 @@ def collection_detail(request, pk):
         collection_serialz = CollectionSerializer(collection_obj, context = cdict)
         return Response(collection_serialz.data)
     elif request.method == "PUT":
-        collection_serialz = CollectionSerializer(collection_obj, data = request.data, context = cdict)
-        collection_serialz.is_valid(raise_exception=True)
-        collection_serialz.save()
-        return Response(collection_serialz.data, status = status.HTTP_201_CREATED)
+        # following changes have been made as per the Hands-on-table implementation
+        pprint(request.data)
+        data =  json.loads(request.data.get('rowData', ''))
+        del data['collection_update']
+        print(f"ID in JSON : {data['id']} - {type(data['id'])}")
+        collection_serialz = None
+        try:
+            collection_serialz = CollectionSerializer(collection_obj, data = data, context = cdict)
+            print(f"Object Serialized : {collection_serialz}")
+        except Exception as e:
+            import traceback
+            print(f"Error while serializing collection : {str(e)}")
+            print(traceback.format_exc())
+
+        if collection_serialz: 
+            collection_serialz.is_valid(raise_exception=True)
+            print("Object validated")       
+
+            try:
+                collection_serialz.save()
+                print("Object saved")       
+            except Exception as e:
+                import traceback
+                print(f"Error saving collection : {str(e)}")
+                print(traceback.format_exc())
+                return Response(status= status.HTTP_304_NOT_MODIFIED)
+                
+            return Response(collection_serialz.data, status = status.HTTP_201_CREATED)
+
+        return Response(status= status.HTTP_304_NOT_MODIFIED)
+
     elif request.method == "DELETE":
         try:
             collection_obj.delete()

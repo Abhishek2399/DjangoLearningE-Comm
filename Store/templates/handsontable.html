@@ -68,10 +68,11 @@
                         var row = changes[0][0]
                         console.log(`${row} changed`);
                         console.log(hot.getSourceDataAtRow(row));
-                        edited_data = hot.getSourceDataAtRow(row)
+                        edited_data = hot.getSourceDataAtRow(row);
+                        console.log(`Edited Data with ID : ${edited_data.id}`);
                         $.ajax({
-                            url: '/store/collections/',
-                            method: 'POST',
+                            url: `/store/collections/${edited_data.id}`,
+                            method: 'PUT',
                             data: {
                               rowData: JSON.stringify(edited_data)
                             },
@@ -79,7 +80,7 @@
                               console.log(response);
                             },
                             error: function (xhr, status, error) {
-                              console.log(xhr.responseText);
+                              console.log(error);
                             }
                         });
                     }

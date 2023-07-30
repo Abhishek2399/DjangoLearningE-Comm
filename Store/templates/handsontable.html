@@ -1,0 +1,107 @@
+{% extends 'home.html' %}
+{% load static %}
+
+{% block body %}
+    {% block navbar %}{% endblock navbar %}
+    {% block data_table %}
+    <div id="example"></div>
+    {% endblock data_table %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+
+        Handsontable.renderers.registerRenderer('customStylesRenderer', (hotInstance, TD, ...rest) => {
+            Handsontable.renderers.TextRenderer(hotInstance, TD, ...rest);
+          
+            TD.style.fontWeight = 'bold';
+            TD.style.color = 'green';
+            TD.style.background = '#d7f1e1';
+          });
+
+        var data = undefined;
+        
+        $(document).ready(function(){ 
+            // Using jQuery to call the API endpoint
+            $.ajax({
+                url: '/store/collections/',
+                dataType: 'json',
+                success: function(data) {
+                    data = data;
+                    if (data){
+                        console.log("Data Found !!");
+                        fill_table(data);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Error: ' + textStatus + ' ' + errorThrown);
+                }
+            });
+        });  
+        
+        console.log(data);
+        console.log(typeof data);
+        function fill_table(data) {
+            var edited_data = undefined;
+            const container = document.querySelector('#example');
+            const hot = new Handsontable(container, {
+                data,
+                colHeaders: true,
+                height: 'auto',
+                width: 'auto',
+                minSpareRows: 1,
+                licenseKey: 'non-commercial-and-evaluation',
+                customBorders: true,
+                dropdownMenu: true,
+                multiColumnSorting: true,
+                filters: true,
+                manualRowMove: true,
+                manualColumnResize: true,
+                cell: [
+                    {
+                    row: 0,
+                    col: 0,
+                    renderer: 'customStylesRenderer',
+                    },
+                ],
+                afterChange: (changes, source) => {
+                    if(source === "edit"){
+                        console.log(changes);
+                        var row = changes[0][0]
+                        console.log(`${row} changed`);
+                        console.log(hot.getSourceDataAtRow(row));
+                        edited_data = hot.getSourceDataAtRow(row);
+                        console.log(`Edited Data with ID : ${edited_data.id}`);
+                        $.ajax({
+                            url: `/store/collections/${edited_data.id}`,
+                            method: 'PUT',
+                            data: {
+                              rowData: JSON.stringify(edited_data)
+                            },
+                            success: function (response) {
+                              console.log(response);
+                            },
+                            error: function (xhr, status, error) {
+                              console.log(error);
+                            }
+                        });
+                    }
+                  }
+            });
+
+            hot.updateSettings({
+                cells(row, col, prop) {
+                    const cellProperties = {};                 
+                    cellProperties.editor = 'text';
+                    return cellProperties;
+                }
+              });
+            
+              
+
+
+        }
+
+        
+    
+    </script>
+{% endblock body %}
+
